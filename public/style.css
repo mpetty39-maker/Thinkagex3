@@ -239,3 +239,7 @@ body.fit { overflow: hidden; }
 .fitgrid .row .ltr { flex: none; }
 .dockline, .dock .hint { white-space: normal; }
 .dock .line { white-space: normal; text-overflow: clip; font-size: 13px; }
+/* Locked state must be obvious; and taps should never wait for double-tap-zoom detection */
+.fitgrid .row:disabled, .tab:disabled { opacity: 0.4; }
+button, .row, .tab, .slot { touch-action: manipulation; }
+html { touch-action: manipulation; }

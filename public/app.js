@@ -357,12 +357,15 @@
       '<ul class="fitgrid" ' + gridDims(words.length) + '>' + wordRows('gword', words, gs.slots, me.locked, -1) + '</ul>';
     var sc = S.scoring;
     var dock;
+    var open = S.targets.length * 3 - total;
+    ui.open = open;
+    if (ui.armed !== null && ui.armed !== undefined && ui.armed !== open) ui.armed = null;
     if (me.locked) {
       var waiting = S.players.filter(function (p) { return !p.done; }).map(function (p) { return p.name; });
-      dock = '<div class="dock"><div class="line">' + (waiting.length ? 'Waiting for ' + esc(waiting.join(', ')) + '…' : 'Everyone is locked in.') + '</div><button class="btn" data-act="unlock">Change my guesses</button></div>';
+      dock = '<div class="dock"><div class="line">' + '<b>You are locked in.</b> ' + (waiting.length ? 'Waiting for ' + esc(waiting.join(', ')) + '…' : 'Everyone is locked in.') + '</div><button class="btn primary" data-act="unlock">Want to guess more? Tap here to unlock</button></div>';
     } else {
       dock = '<div class="dock"><div class="line">' + total + '/' + (S.targets.length * 3) + ' filled · 2 right +' + sc.two + ' · 3 right +' + sc.full + ' · ★ ×' + sc.starMultiplier + '/−' + sc.starPenalty + '</div>' +
-        '<button class="btn primary big" data-act="lock">Lock in guesses</button></div>';
+        '<button class="btn primary big" data-act="lock">' + (ui.armed === open ? open + ' blank' + (open === 1 ? '' : 's') + ' still empty. Tap again to lock' : 'Lock in guesses') + '</button></div>';
     }
     return { hdr: header(), main: '<main class="screen fitscreen">' + body + '</main>', dock: dock };
   }
@@ -616,7 +619,13 @@
         ui.star[ui.target] = !starOf(ui.target);
         if (gFilled(ui.target) > 0) sendGuess(ui.target);
         return render();
-      case 'lock': return send({ t: 'lock' });
+      case 'lock':
+        if (ui.open > 0 && ui.armed !== ui.open) {
+          ui.armed = ui.open; render();
+          setTimeout(function () { ui.armed = null; render(); }, 5000);
+          return;
+        }
+        ui.armed = null; return send({ t: 'lock' });
       case 'unlock': return send({ t: 'unlock' });
       case 'vote': return send({ t: 'vote', group: Number(d.g), same: d.s === '1' });
       case 'skipVotes': return send({ t: 'skipVotes' });
